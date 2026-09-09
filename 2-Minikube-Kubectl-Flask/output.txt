@@ -1,0 +1,40 @@
+=== Deployments ===
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+flask-app   1/1     1            1           11s
+
+=== Pods ===
+NAME                         READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+flask-app-6d58f88547-9q44k   1/1     Running   0          12s   10.244.0.5   minikube   <none>           <none>
+
+=== Services ===
+NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)           AGE     SELECTOR
+flask-app-service   NodePort    10.108.146.129   <none>        15000:32052/TCP   12s     app=flask-app
+kubernetes          ClusterIP   10.96.0.1        <none>        443/TCP           7m42s   <none>
+
+=== Deployment Description ===
+Name:                   flask-app
+Namespace:              default
+Selector:               app=flask-app
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+Pod Template:
+  Labels:  app=flask-app
+  Containers:
+   flask-app:
+    Image:         flask-app:latest
+    Port:          15000/TCP
+    Host Port:     0/TCP
+
+=== Service Access via Minikube ===
+Service URL: http://127.0.0.1:55559
+
+=== HTTP Response ===
+Hello from Flask on Kubernetes!
+
+=== Container Logs ===
+ * Serving Flask app 'app'
+ * Debug mode: off
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:15000
+ * Running on http://10.244.0.5:15000
+10.244.0.1 - - [17/Oct/2026 17:21:06] "GET / HTTP/1.1" 200 -
