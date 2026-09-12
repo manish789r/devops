@@ -1,0 +1,43 @@
+=== Initial ReplicaSet Status (3 Replicas) ===
+NAME           DESIRED   CURRENT   READY   AGE
+flashsale-rs   3         3         3       36s
+
+NAME                 READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+flashsale-rs-6tbb8   1/1     Running   0          38s   10.244.0.6   minikube   <none>           <none>
+flashsale-rs-hn8bc   1/1     Running   0          38s   10.244.0.7   minikube   <none>           <none>
+flashsale-rs-x7vfj   1/1     Running   0          38s   10.244.0.8   minikube   <none>           <none>
+
+=== Scaled ReplicaSet Status (5 Replicas) ===
+NAME           DESIRED   CURRENT   READY   AGE
+flashsale-rs   5         5         5       71s
+
+NAME                 READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+flashsale-rs-5x9jr   1/1     Running   0          12s   10.244.0.9    minikube   <none>           <none>
+flashsale-rs-6tbb8   1/1     Running   0          71s   10.244.0.6    minikube   <none>           <none>
+flashsale-rs-g7f4f   1/1     Running   0          11s   10.244.0.10   minikube   <none>           <none>
+flashsale-rs-hn8bc   1/1     Running   0          71s   10.244.0.7    minikube   <none>           <none>
+flashsale-rs-x7vfj   1/1     Running   0          71s   10.244.0.8    minikube   <none>           <none>
+
+=== Resiliency / Self-Healing Test ===
+Deleted pod: flashsale-rs-6tbb8
+Replacement pod auto-provisioned: flashsale-rs-6jrzl (Ready in 5s)
+
+NAME                 READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+flashsale-rs-5x9jr   1/1     Running   0          37s   10.244.0.9    minikube   <none>           <none>
+flashsale-rs-6jrzl   1/1     Running   0          5s    10.244.0.11   minikube   <none>           <none>
+flashsale-rs-g7f4f   1/1     Running   0          36s   10.244.0.10   minikube   <none>           <none>
+flashsale-rs-hn8bc   1/1     Running   0          96s   10.244.0.7    minikube   <none>           <none>
+flashsale-rs-x7vfj   1/1     Running   0          96s   10.244.0.8    minikube   <none>           <none>
+
+=== Service Access via Minikube ===
+Service URL: http://127.0.0.1:56164
+
+=== HTTP Responses Demonstrating Load Distribution ===
+GET /:
+{"message":"Welcome to Big Sale!","pod":"flashsale-rs-hn8bc","ts":1792258056.6776216}
+
+GET /buy:
+{"item":"Headphones","served_by_pod":"flashsale-rs-hn8bc","status":"success","time":"17:27:37","user":"user206"}
+
+GET /health:
+{"pod":"flashsale-rs-g7f4f","status":"healthy"}
