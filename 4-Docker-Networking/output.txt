@@ -1,0 +1,112 @@
+=== Task 1: Create a Bridge Network ===
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker network create --driver bridge my-bridge-net
+87c23b491f5994c74e497f4f4f4f4f4f4f4f4
+
+=== Task 2: Verify the Network ===
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker network ls
+NETWORK ID     NAME            DRIVER    SCOPE
+87c23b491f59   bridge          bridge    local
+09df8c42a5bc   host            host      local
+87c23b491f59   my-bridge-net   bridge    local
+59e0a24d55b8   none            null      local
+
+=== Task 3: Inspect the Network ===
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker network inspect my-bridge-net
+[
+    {
+        "Name": "my-bridge-net",
+        "Id": "87c23b491f5994c74e497f4f4f4f4f4f4f4f4",
+        "Created": "2026-10-18T14:20:21.421654Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "096cfed41e6931ec077ee7b06dc8be39588c34af5f1f759eb88c278db03b9cfa": {
+                "Name": "flask",
+                "EndpointID": "5df6b5c01ec4c4ee566d5b0bcf47983c21aefcae5fbe43152ef389d42475ab55",
+                "MacAddress": "02:42:ac:12:00:04",
+                "IPv4Address": "172.18.0.4/16",
+                "IPv6Address": ""
+            },
+            "3f26e675614918a2111c4bd4544f97f8f46bc0ed1074a223a32adc6108bf02fa": {
+                "Name": "mysql",
+                "EndpointID": "17b8359ee5ec077eef250787e9154ec5a53e414c1fa0b3eaef76be57f62e8111",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            },
+            "8718d50e44aabdeff9e75e01f6b3e161157816d477e8f6951af505f0d37dcaa1": {
+                "Name": "redis",
+                "EndpointID": "07455823126be1515efb319aa597a76c8c4e42aa15313936082ec05664cfbc17",
+                "MacAddress": "02:42:ac:12:00:03",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+
+=== Task 4: Launch Containers ===
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker build -t flask-api .
+[+] Building 4.4s (11/11) FINISHED
+ => naming to docker.io/library/flask-api:latest
+
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker run -d --name mysql --net=my-bridge-net -e MYSQL_ROOT_PASSWORD=root mysql:latest
+3f26e675614918a2111c4bd4544f97f8f46bc0ed1074a223a32adc6108bf02fa
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker run -d --name redis --net=my-bridge-net redis:latest
+8718d50e44aabdeff9e75e01f6b3e161157816d477e8f6951af505f0d37dcaa1
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker run -d --name flask --net=my-bridge-net -p 5001:5001 flask-api
+096cfed41e6931ec077ee7b06dc8be39588c34af5f1f759eb88c278db03b9cfa
+
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+096cfed41e69   flask-api      "python app.py"          14 seconds ago  Up 13 seconds  0.0.0.0:5001->5001/tcp, [::]:5001->5001/tcp   flask
+8718d50e44aa   redis:latest   "docker-entrypoint.s…"   2 hours ago     Up 2 hours     6379/tcp                                      redis
+3f26e6756149   mysql:latest   "docker-entrypoint.s…"   2 hours ago     Up 2 hours     3306/tcp, 33060/tcp                           mysql
+
+=== Task 5: Test Connectivity ===
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker exec flask ping -c 3 mysql
+PING mysql (172.18.0.2) 56(84) bytes of data.
+64 bytes from mysql.my-bridge-net (172.18.0.2): icmp_seq=1 ttl=64 time=2.47 ms
+64 bytes from mysql.my-bridge-net (172.18.0.2): icmp_seq=2 ttl=64 time=0.333 ms
+64 bytes from mysql.my-bridge-net (172.18.0.2): icmp_seq=3 ttl=64 time=0.126 ms
+
+--- mysql ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+rtt min/avg/max/mdev = 0.126/0.975/2.468/1.058 ms
+
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> docker exec flask ping -c 3 redis
+PING redis (172.18.0.3) 56(84) bytes of data.
+64 bytes from redis.my-bridge-net (172.18.0.3): icmp_seq=1 ttl=64 time=18.5 ms
+64 bytes from redis.my-bridge-net (172.18.0.3): icmp_seq=2 ttl=64 time=0.068 ms
+64 bytes from redis.my-bridge-net (172.18.0.3): icmp_seq=3 ttl=64 time=0.074 ms
+
+--- redis ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 1998ms
+rtt min/avg/max/mdev = 0.068/6.200/18.459/8.668 ms
+
+PS C:\Users\System32\Devops\Exercise-4-Docker-Networking> curl.exe -s http://localhost:5001/about
+{
+  "description": "This is a simple REST API built with Flask.", 
+  "name": "Simple REST API", 
+  "version": "1.0"
+}
