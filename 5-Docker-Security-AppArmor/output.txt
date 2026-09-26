@@ -1,0 +1,64 @@
+=== Task 1 & 2: Containerize the Flask Application ===
+PS C:\Users\System32\Devops\Exercise-5-Docker-Security-AppArmor> docker build -t flask-apparmor .
+[+] Building 1.6s (10/10) FINISHED
+ => [internal] load build definition from Dockerfile
+ => [internal] load metadata for docker.io/library/python:3.9-slim
+ => [1/5] FROM docker.io/library/python:3.9-slim
+ => [2/5] WORKDIR /app
+ => [3/5] COPY requirements.txt .
+ => [4/5] COPY app.py .
+ => [5/5] RUN pip install --no-cache-dir -r requirements.txt
+ => exporting to image
+ => naming to docker.io/library/flask-apparmor:latest
+
+=== Task 3: AppArmor Profile Specification ===
+PS C:\Users\System32\Devops\Exercise-5-Docker-Security-AppArmor> Get-Content my-apparmor-profile
+#include <tunables/global>
+
+/usr/bin/python3 {
+    # Deny access to sensitive system files
+    deny /etc/** r,
+    deny /var/** rw,
+
+    # Allow Flask app to bind to port 5000
+    network inet stream,
+
+    # Permissions to the application directory
+    /app/** rwk,
+
+    # Deny execution of any binaries in /bin or /usr/bin
+    deny /bin/** rmix,
+    deny /usr/bin/** rmix,
+
+    # Capability restrictions
+    capability net_bind_service,
+    deny capability sys_admin,
+}
+
+=== Task 4: Use Docker SDK for Python to Apply AppArmor Profile ===
+PS C:\Users\System32\Devops\Exercise-5-Docker-Security-AppArmor> python apply_apparmor.py
+Building image from Dockerfile...
+[INFO] Successfully built flask-apparmor
+
+Running container with AppArmor profile...
+Container started: 9b9137413eb8
+
+Inspecting container to verify AppArmor profile...
+AppArmor profile applied: ['apparmor=my-apparmor-profile']
+
+Stopping the container...
+Container stopped and removed.
+
+=== Task 5: Test Restricted Actions ===
+PS C:\Users\System32\Devops\Exercise-5-Docker-Security-AppArmor> python test_restricted_actions.py
+Running container with AppArmor profile...
+Container started: f8c2a7f9b9b8
+
+Testing restricted action: Reading /etc/passwd...
+Attempt to read /etc/passwd: Exit Code 1, Output: Permission denied
+
+Testing restricted action: Executing /bin/bash...
+Attempt to execute /bin/bash: Exit Code 126, Output: Permission denied
+
+Stopping container...
+Container stopped and removed.
