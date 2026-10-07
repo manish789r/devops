@@ -1,0 +1,66 @@
+=== Step 1: Write and Containerize Python Delivery Metrics Simulator ===
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> docker build -t delivery_metrics .
+[+] Building 1.7s (10/10) FINISHED
+ => [internal] load build definition from Dockerfile
+ => [internal] load metadata for docker.io/library/python:3.9-slim
+ => [1/5] FROM docker.io/library/python:3.9-slim
+ => [2/5] WORKDIR /app
+ => [3/5] COPY requirements.txt .
+ => [4/5] RUN pip install --no-cache-dir -r requirements.txt
+ => [5/5] COPY delivery_metrics.py .
+ => exporting to image
+ => naming to docker.io/library/delivery_metrics:latest
+
+=== Step 2: Run Delivery Metrics Container ===
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> docker run -d --name delivery_metrics -p 8000:8000 delivery_metrics
+a1b94b98de368d5d5bfc411ae64258f7ebb5aee940d53037dffad2886819ddd0
+
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> docker ps
+CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+a1b94b98de36   delivery_metrics   "python delivery_met…"   6 seconds ago   Up 5 seconds   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp   delivery_metrics
+
+=== Step 3: Query Prometheus Scrape Endpoint (/metrics) ===
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> curl.exe -s http://localhost:8000/metrics
+# HELP total_deliveries Total number of deliveries
+# TYPE total_deliveries gauge
+total_deliveries 63.0
+# HELP pending_deliveries Number of pending deliveries
+# TYPE pending_deliveries gauge
+pending_deliveries 15.0
+# HELP on_the_way_deliveries Number of deliveries on the way
+# TYPE on_the_way_deliveries gauge
+on_the_way_deliveries 17.0
+# HELP average_delivery_time Average delivery time in seconds
+# TYPE average_delivery_time summary
+average_delivery_time_count 52.0
+average_delivery_time_sum 1601.3108177925953
+# HELP average_delivery_time_created Average delivery time in seconds
+# TYPE average_delivery_time_created gauge
+average_delivery_time_created 1.7923144084535837e+09
+
+=== Step 4: Configure Prometheus and Alerts ===
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> Get-Content alert_rules.yml
+groups:
+  - name: delivery_alerts
+    rules:
+      - alert: HighPendingDeliveries
+        expr: pending_deliveries > 10
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High pending deliveries"
+          description: "Pending deliveries are above 10 for the last 15 seconds."
+
+      - alert: HighAverageDeliveryTime
+        expr: (average_delivery_time_sum / average_delivery_time_count) > 30
+        labels:
+          severity: critical
+        annotations:
+          summary: "High average delivery time"
+          description: "Average delivery time is above 30 seconds for the last 15 seconds."
+
+=== Step 5: Clean Up Resources ===
+PS C:\Users\System32\Devops\Exercise-6-Grafana-Realtime-Monitoring-of-Quick-Commerce-App> docker stop delivery_metrics; docker rm delivery_metrics
+delivery_metrics
+delivery_metrics

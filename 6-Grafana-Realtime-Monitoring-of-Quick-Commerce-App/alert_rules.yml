@@ -1,0 +1,20 @@
+groups:
+  - name: zapptto_order_alerts
+    rules:
+      - alert: HighPendingOrders
+        expr: pending_orders > 10
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elevated pending orders detected"
+          description: "Pending orders have exceeded 10 for more than 15 seconds."
+
+      - alert: HighDispatchTime
+        expr: (avg_dispatch_time_sum / avg_dispatch_time_count) > 30
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Average dispatch time too high"
+          description: "Average order dispatch time has exceeded 30 seconds for more than 15 seconds."

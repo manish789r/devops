@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+    stages {
+        stage('Pre-check Docker') {
+            steps {
+                script {
+                    try {
+                        def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
+                        if (!dockerVersion) {
+                            error "Docker is not installed or unavailable in PATH."
+                        }
+                        def dockerStatus = sh(script: 'docker info', returnStatus: true)
+                        if (dockerStatus != 0) {
+                            error "Docker daemon is not running or not reachable."
+                        }
+                        echo "Docker is available: ${dockerVersion}"
+                    } catch (Exception e) {
+                        error "Docker pre-check failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('Setup Workspace') {
+            steps {
+                script {
+                    echo "Preparing workspace with ZAPPTTO metrics configs and Prometheus rules..."
+                }
+            }
+        }
+        stage('Build Metrics Image') {
+            steps {
+                sh 'docker build -t zapptto_metrics .'
+            }
+        }
+        stage('Start Metrics Simulator') {
+            steps {
+                sh 'docker run -d -p 8000:8000 --name zapptto_metrics zapptto_metrics'
+            }
+        }
+        stage('Start Prometheus & Grafana') {
+            steps {
+                sh '''
+                docker run -d --name prometheus -p 9090:9090 \
+                  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+                  -v $(pwd)/alert_rules.yml:/etc/prometheus/alert_rules.yml \
+                  prom/prometheus
+                docker run -d --name grafana -p 3000:3000 grafana/grafana
+                '''
+            }
+        }
+    }
+}
