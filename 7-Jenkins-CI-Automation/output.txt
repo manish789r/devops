@@ -1,0 +1,27 @@
+=== Step 1: Install & Run Jenkins using Docker ===
+PS C:\Users\System32\Devops\Exercise-7-Jenkins-CI-Automation> docker run -d --name jenkins -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+f8e65eabe0053d39b8d77d5e0efb81f71f3c9426ace7a909c3b921ef22fb3d0c
+
+=== Step 2: Verify Running Jenkins Container ===
+PS C:\Users\System32\Devops\Exercise-7-Jenkins-CI-Automation> docker ps -f "name=jenkins"
+CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                                                                                      NAMES
+f8e65eabe005   jenkins/jenkins:lts   "/usr/bin/tini -- /u…"   15 seconds ago   Up 14 seconds   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp, 0.0.0.0:50000->50000/tcp, [::]:50000->50000/tcp   jenkins
+
+=== Step 3: Retrieve Jenkins Initial Admin Password ===
+PS C:\Users\System32\Devops\Exercise-7-Jenkins-CI-Automation> docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+5aa9061c55124b22a37a237aae2aecc7
+
+=== Step 4: Verify Jenkins HTTP Web Endpoint ===
+PS C:\Users\System32\Devops\Exercise-7-Jenkins-CI-Automation> curl.exe -s -I http://localhost:8080/login
+HTTP/1.1 200 OK
+Server: Jetty(12.1.13)
+Date: Sun, 18 Oct 2026 09:15:16 GMT
+X-Content-Type-Options: nosniff
+Content-Type: text/html;charset=utf-8
+X-Jenkins: 2.580.1
+X-Frame-Options: sameorigin
+
+=== Step 5: Clean Up Resources ===
+PS C:\Users\System32\Devops\Exercise-7-Jenkins-CI-Automation> docker stop jenkins; docker rm jenkins
+jenkins
+jenkins
