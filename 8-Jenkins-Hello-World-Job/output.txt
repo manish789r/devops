@@ -1,0 +1,20 @@
+=== Step 1: Script Content & Permissions ===
+PS C:\Users\System32\Devops\Exercise-8-Jenkins-Hello-World-Job> Get-Content hello-world.sh
+#!/bin/bash
+echo "Hello, Jenkins!"
+
+=== Step 2: Direct Execution Test ===
+PS C:\Users\System32\Devops\Exercise-8-Jenkins-Hello-World-Job> bash hello-world.sh
+Hello, Jenkins!
+
+=== Step 3: Git Version Control Tracking ===
+PS C:\Users\System32\Devops\Exercise-8-Jenkins-Hello-World-Job> git status -s
+A  hello-world.sh
+
+=== Step 4: Jenkins Freestyle Job Console Output ===
+Started by user Admin
+Building in workspace /var/jenkins_home/workspace/HelloWorld
+[HelloWorld] $ /bin/sh -xe /tmp/jenkins1281930102.sh
++ echo 'Hello, Jenkins!'
+Hello, Jenkins!
+Finished: SUCCESS
