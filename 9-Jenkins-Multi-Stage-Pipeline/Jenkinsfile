@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Installing Python dependencies from requirements.txt...'
+                sh 'pip install --no-cache-dir -r requirements.txt'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Discovering and running unit tests...'
+                sh 'python3 -m unittest discover -s .'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Copying application artifact to staging directory...'
+                sh '''
+                mkdir -p ${WORKSPACE}/flask-app-deploy
+                cp ${WORKSPACE}/app.py ${WORKSPACE}/flask-app-deploy/
+                '''
+            }
+        }
+        stage('Run Application') {
+            steps {
+                echo 'Starting Flask application in the background...'
+                sh '''
+                nohup python3 ${WORKSPACE}/flask-app-deploy/app.py > ${WORKSPACE}/flask-app-deploy/app.log 2>&1 &
+                echo $! > ${WORKSPACE}/flask-app-deploy/app.pid
+                '''
+            }
+        }
+        stage('Test Application') {
+            steps {
+                echo 'Running integration test against the live application...'
+                sh 'python3 ${WORKSPACE}/test_app.py'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'All pipeline stages completed successfully!'
+        }
+        failure {
+            echo 'Pipeline encountered an error. Please review the stage logs.'
+        }
+    }
+}

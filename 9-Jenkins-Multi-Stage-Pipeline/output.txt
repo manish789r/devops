@@ -1,0 +1,47 @@
+=== Step 1: Unit Test Execution ===
+PS C:\Users\System32\Devops\Exercise-9-Jenkins-Multi-Stage-Pipeline> python -m unittest test_app.py
+Hello, Jenkins Multi-Stage Pipeline!
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.021s
+
+OK
+
+=== Step 2: Jenkins Pipeline Execution Logs ===
+Started by user admin
+Obtained Jenkinsfile from git https://github.com/koushikbhegde/DevOps.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/Python-MultiStage-Pipeline
+[Pipeline] {
+[Pipeline] stage (Build)
+Creating virtual environment and installing dependencies...
+[Pipeline] stage (Test)
+Running tests...
++ python3 -m unittest discover -s .
+Hello, Jenkins Multi-Stage Pipeline!
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.004s
+
+OK
+[Pipeline] stage (Deploy)
+Deploying application...
++ mkdir -p /var/jenkins_home/workspace/Python-MultiStage-Pipeline/python-app-deploy
++ cp app.py /var/jenkins_home/workspace/Python-MultiStage-Pipeline/python-app-deploy/
+[Pipeline] stage (Run Application)
+Running application...
++ nohup python3 /var/jenkins_home/workspace/Python-MultiStage-Pipeline/python-app-deploy/app.py &
+[Pipeline] stage (Test Application)
+Testing application...
++ python3 test_app.py
+Hello, Jenkins Multi-Stage Pipeline!
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.004s
+
+OK
+[Pipeline] stage (Post Actions)
+Pipeline completed successfully!
+[Pipeline] End of Pipeline
+Finished: SUCCESS
